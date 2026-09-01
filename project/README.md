@@ -33,3 +33,16 @@ Will our current quantitative ETF momentum and factor strategy remain profitable
 
 ## Repo Plan
 `data/`, `src/`, `notebooks/`, `docs/`, `reports/`, `model/`; updated per project milestone.
+
+## Data Storage
+
+### Folder Structure
+- `data/raw/`: Read-only landing zone for immutable source data (CSV format).
+- `data/processed/`: Standardized, type-preserved data layers for downstream analysis (Parquet format).
+
+### Formats Used & Rationale
+- **CSV (`data/raw/`)**: Maintains direct visibility and human readability for newly ingested API and scraped responses[cite: 4].
+- **Parquet (`data/processed/`)**: Provides fast I/O throughput, schema enforcement (`datetime64`, `float64`), and efficient columnar compression for modeling.
+
+### Environment Path Binding
+Data directory routes are dynamically assigned through `.env` variable overrides (`DATA_DIR_RAW`, `DATA_DIR_PROCESSED`) using `os.getenv()`[cite: 4]. Operations are abstracted through custom `write_df()` and `read_df()` helpers to prevent hardcoded local paths[cite: 4].
