@@ -46,3 +46,22 @@ Will our current quantitative ETF momentum and factor strategy remain profitable
 
 ### Environment Path Binding
 Data directory routes are dynamically assigned through `.env` variable overrides (`DATA_DIR_RAW`, `DATA_DIR_PROCESSED`) using `os.getenv()`[cite: 4]. Operations are abstracted through custom `write_df()` and `read_df()` helpers to prevent hardcoded local paths[cite: 4].
+
+## Data Preprocessing
+
+### Pipeline Overview
+Data cleaning and transformations are modularized inside `src/cleaning.py` to support reproducible feature engineering[cite: 7]:
+- **Sparse Feature Removal (`drop_missing`)**: Drops columns with $>50\%$ missing values to eliminate noise[cite: 7].
+- **Median Imputation (`fill_missing_median`)**: Imputes missing values in continuous features using non-parametric column medians[cite: 7].
+- **Feature Normalization (`normalize_data`)**: Scales numeric values into $[0, 1]$ via Min-Max scaling to ensure distance-metric stability[cite: 7].
+
+### Rationale & Tradeoffs
+| Preprocessing Step | Method Applied | Rationale / Assumption |
+| :--- | :--- | :--- |
+| Missingness Filter | $50\%$ Null Threshold | High null proportions degrade model performance; dropping is safer than heavy imputation[cite: 7]. |
+| Imputation | Median Imputation | Median is robust to financial market skewness and extreme outliers[cite: 7]. |
+| Scaling | Min-Max Normalization | Keeps underlying distributions bounded in $[0, 1]$ for efficient gradient descent[cite: 7]. |
+
+### Processed Artifacts
+- **Output File**: `data/processed/market_data_processed.parquet`[cite: 7].
+- **Format**: Parquet format preserving exact data types (`datetime64`, `float64`) for downstream modeling[cite: 7].
