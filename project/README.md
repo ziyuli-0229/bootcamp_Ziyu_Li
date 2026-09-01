@@ -41,27 +41,38 @@ Will our current quantitative ETF momentum and factor strategy remain profitable
 - `data/processed/`: Standardized, type-preserved data layers for downstream analysis (Parquet format).
 
 ### Formats Used & Rationale
-- **CSV (`data/raw/`)**: Maintains direct visibility and human readability for newly ingested API and scraped responses[cite: 4].
+- **CSV (`data/raw/`)**: Maintains direct visibility and human readability for newly ingested API and scraped responses.
 - **Parquet (`data/processed/`)**: Provides fast I/O throughput, schema enforcement (`datetime64`, `float64`), and efficient columnar compression for modeling.
 
 ### Environment Path Binding
-Data directory routes are dynamically assigned through `.env` variable overrides (`DATA_DIR_RAW`, `DATA_DIR_PROCESSED`) using `os.getenv()`[cite: 4]. Operations are abstracted through custom `write_df()` and `read_df()` helpers to prevent hardcoded local paths[cite: 4].
+Data directory routes are dynamically assigned through `.env` variable overrides (`DATA_DIR_RAW`, `DATA_DIR_PROCESSED`) using `os.getenv()`. Operations are abstracted through custom `write_df()` and `read_df()` helpers to prevent hardcoded local paths.
 
 ## Data Preprocessing
 
 ### Pipeline Overview
-Data cleaning and transformations are modularized inside `src/cleaning.py` to support reproducible feature engineering[cite: 7]:
-- **Sparse Feature Removal (`drop_missing`)**: Drops columns with $>50\%$ missing values to eliminate noise[cite: 7].
-- **Median Imputation (`fill_missing_median`)**: Imputes missing values in continuous features using non-parametric column medians[cite: 7].
-- **Feature Normalization (`normalize_data`)**: Scales numeric values into $[0, 1]$ via Min-Max scaling to ensure distance-metric stability[cite: 7].
+Data cleaning and transformations are modularized inside `src/cleaning.py` to support reproducible feature engineering:
+- **Sparse Feature Removal (`drop_missing`)**: Drops columns with $>50\%$ missing values to eliminate noise.
+- **Median Imputation (`fill_missing_median`)**: Imputes missing values in continuous features using non-parametric column medians.
+- **Feature Normalization (`normalize_data`)**: Scales numeric values into $[0, 1]$ via Min-Max scaling to ensure distance-metric stability.
 
 ### Rationale & Tradeoffs
 | Preprocessing Step | Method Applied | Rationale / Assumption |
 | :--- | :--- | :--- |
-| Missingness Filter | $50\%$ Null Threshold | High null proportions degrade model performance; dropping is safer than heavy imputation[cite: 7]. |
-| Imputation | Median Imputation | Median is robust to financial market skewness and extreme outliers[cite: 7]. |
-| Scaling | Min-Max Normalization | Keeps underlying distributions bounded in $[0, 1]$ for efficient gradient descent[cite: 7]. |
+| Missingness Filter | $50\%$ Null Threshold | High null proportions degrade model performance; dropping is safer than heavy imputation. |
+| Imputation | Median Imputation | Median is robust to financial market skewness and extreme outliers. |
+| Scaling | Min-Max Normalization | Keeps underlying distributions bounded in $[0, 1]$ for efficient gradient descent. |
 
 ### Processed Artifacts
-- **Output File**: `data/processed/market_data_processed.parquet`[cite: 7].
-- **Format**: Parquet format preserving exact data types (`datetime64`, `float64`) for downstream modeling[cite: 7].
+- **Output File**: `data/processed/market_data_processed.parquet`.
+- **Format**: Parquet format preserving exact data types (`datetime64`, `float64`) for downstream modeling.
+
+## Outlier Analysis Strategy
+
+### Modular Detection
+Outlier routines are implemented in `src/outliers.py`:
+- `detect_outliers_iqr()`: Non-parametric detection using quantile ranges.
+- `detect_outliers_zscore()`: Parametric detection using standard deviations.
+- `winsorize_series()`: Quantile capping to control extreme value leverage.
+
+### Processed Output
+Dataset features with boolean outlier flags and Winsorized transformations are exported to `data/processed/market_data_outliers_handled.parquet`.
