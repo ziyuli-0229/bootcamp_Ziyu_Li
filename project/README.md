@@ -76,3 +76,13 @@ Outlier routines are implemented in `src/outliers.py`:
 
 ### Processed Output
 Dataset features with boolean outlier flags and Winsorized transformations are exported to `data/processed/market_data_outliers_handled.parquet`.
+
+## Feature Definitions (Stage 09)
+
+The feature engineering pipeline (`src/features.py`) generates the following calculated fields:
+- `spend_income_ratio`: Ratio of monthly spend to gross income[cite: 12].
+- `spend_rolling_mean_7d`: 7-day rolling moving average of spend[cite: 12].
+- `spend_rolling_std_7d`: 7-day rolling volatility standard deviation of spend[cite: 12].
+- `region_freq`: Frequency-encoded proportion representing categorical region prevalence[cite: 12].
+
+Engineered datasets are saved to `data/processed/market_data_features.parquet`[cite: 12].
