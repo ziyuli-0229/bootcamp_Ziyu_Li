@@ -1,8 +1,22 @@
+# Secret files (Sensitive)
 .env
+
+# Python Bytecode & Cache
 __pycache__/
 *.py[cod]
+*$py.class
+
+# Jupyter Notebook Checkpoints
 .ipynb_checkpoints/
-data/raw/*
-!data/raw/.gitkeep
-data/processed/*
-!data/processed/.gitkeep
+
+# Environment
+env/
+venv/
+ENV/
+
+# OS metadata
+.DS_Store
+Thumbs.db
+
+# Instructor Class Materials
+class_materials/
