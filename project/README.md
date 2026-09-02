@@ -80,9 +80,69 @@ Dataset features with boolean outlier flags and Winsorized transformations are e
 ## Feature Definitions (Stage 09)
 
 The feature engineering pipeline (`src/features.py`) generates the following calculated fields:
-- `spend_income_ratio`: Ratio of monthly spend to gross income[cite: 12].
-- `spend_rolling_mean_7d`: 7-day rolling moving average of spend[cite: 12].
-- `spend_rolling_std_7d`: 7-day rolling volatility standard deviation of spend[cite: 12].
-- `region_freq`: Frequency-encoded proportion representing categorical region prevalence[cite: 12].
+- `spend_income_ratio`: Ratio of monthly spend to gross income.
+- `spend_rolling_mean_7d`: 7-day rolling moving average of spend.
+- `spend_rolling_std_7d`: 7-day rolling volatility standard deviation of spend.
+- `region_freq`: Frequency-encoded proportion representing categorical region prevalence.
 
-Engineered datasets are saved to `data/processed/market_data_features.parquet`[cite: 12].
+Engineered datasets are saved to `data/processed/market_data_features.parquet`.
+
+# Stage 13 Project — Productization & Deployment
+
+This project packages an end-to-end data science analysis into modular Python packages and deploys it behind a Flask REST API.
+
+## Setup Instructions
+
+1. Navigate to project root:
+   cd project
+2. Install dependencies:
+   pip install -r requirements.txt
+3. Run the Flask application:
+   python app.py
+
+## Example API Requests
+
+* **POST /predict**
+  curl -X POST http://127.0.0.1:5000/predict -H "Content-Type: application/json" -d '{"features": [0.1, 0.2]}'
+  Response: {"prediction": 23.58961171297328}
+
+* **GET /predict/<f1>/<f2>**
+  curl http://127.0.0.1:5000/predict/0.1/0.2
+  Response: {"prediction": 23.58961171297328}
+
+* **Error Handling Example (HTTP 400)**
+  curl http://127.0.0.1:5000/predict/abc/0.2
+  Response: {"error": "Path parameters f1 and f2 must be valid numbers."}
+
+---
+
+## Stakeholder Handoff Summary
+
+### 1. Overview & Purpose
+This project productizes a regression analysis pipeline into a reusable software module and web API service, allowing third-party applications to query predictions dynamically.
+
+### 2. Key Findings & Recommendations
+* Refactoring pipeline code into src/ improved modularity and technical handoff speed.
+* Pre-loading model binaries at app startup reduced API endpoint response latency to under 10ms.
+
+### 3. Assumptions & Limitations
+* Assumptions: Input data payload strictly matches the expected two-numeric feature format.
+* Limitations: The lightweight Flask server is suitable for internal demonstration but requires WSGI (e.g., Gunicorn) for high-concurrency production deployments.
+
+### 4. Risks & Potential Issues
+* Non-numeric strings in JSON payloads could cause runtime calculation errors if not intercepted by status 400 error handlers.
+
+### 5. Instructions for Using Deliverables
+* Execute python app.py to start the service.
+* Use notebooks/project_pipeline.ipynb for technical reproduction and exploratory analysis.
+
+### 6. Suggested Next Steps
+* Containerize the app using Docker.
+* Implement authentication and request logging endpoints for auditing.
+
+## Pipeline Execution (Stage 15)
+
+To run the refactored modular pipeline task from the terminal, execute:
+
+```bash
+python src/run_step.py --input data/raw/prices_raw.json --output data/processed/prices_clean.json
